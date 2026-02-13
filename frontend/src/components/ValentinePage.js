@@ -3,7 +3,7 @@ import './ValentinePage.css';
 
 const ValentinePage = ({ onNavigate }) => {
   // STAGE: 'intro' | 'question' | 'success'
-  const [stage, setStage] = useState('question');
+  const [stage, setStage] = useState('intro');
   const [introIndex, setIntroIndex] = useState(0);
   
   const [noCount, setNoCount] = useState(0);
