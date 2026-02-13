@@ -72,10 +72,9 @@ const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => 
           </button>
           
           <div className="password-content">
-            <h1 className="password-title">Something Special Awaits 💝</h1>
+            <h1 className="password-title">the password is secret hehe</h1>
             <p className="password-subtitle">
-              I've left you some messages from my heart.<br/>
-              Enter the password to unlock them.
+              You need to give me a kiss first before getting the password hehe
             </p>
             
             <form onSubmit={handlePasswordSubmit} className="password-form">

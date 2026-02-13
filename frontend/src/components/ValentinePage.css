@@ -1,3 +1,4 @@
+/* Keep existing container styles */
 .valentine-container {
   min-height: 100vh;
   display: flex;
@@ -12,6 +13,7 @@
 .valentine-content {
   text-align: center;
   max-width: 600px;
+  width: 90%; /* Ensure responsiveness */
   padding: 60px 40px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 30px;
@@ -19,6 +21,65 @@
   position: relative;
   z-index: 1;
 }
+
+/* --- NEW INTRO STYLES --- */
+.intro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.intro-text {
+  font-size: 2rem;
+  color: #d4524f;
+  margin-bottom: 40px;
+  font-weight: 600;
+  line-height: 1.4;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.intro-button {
+  padding: 15px 40px;
+  font-size: 1.4rem;
+  color: white;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+}
+
+.intro-button:hover {
+  transform: scale(1.05);
+}
+
+.intro-progress {
+  display: flex;
+  gap: 8px;
+  margin-top: 30px;
+}
+
+.progress-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ddd;
+  transition: background-color 0.3s;
+}
+
+.progress-dot.active {
+  background-color: #f5576c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- EXISTING STYLES (Tweaked) --- */
 
 .valentine-title {
   font-size: 3.5rem;
@@ -42,8 +103,8 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 30px;
-  min-height: 120px;
-  position: relative;
+  min-height: 120px; /* Space for button to grow */
+  position: relative; /* Essential for absolute positioning of No button */
 }
 
 .yes-button {
@@ -55,14 +116,13 @@
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
   position: relative;
-  z-index: 2;
+  z-index: 5;
+  /* We remove transitions here to let JS handle the scaling smoothly */
 }
 
 .yes-button:hover {
-  transform: scale(1.05) translateY(-2px);
   box-shadow: 0 15px 40px rgba(245, 87, 108, 0.5);
 }
 
@@ -75,9 +135,12 @@
   border: 2px solid #ddd;
   border-radius: 50px;
   cursor: pointer;
-  transition: transform 0.3s ease;
-  position: absolute;
-  z-index: 1;
+  white-space: nowrap; /* Prevents text wrapping */
+  
+  /* IMPORTANT CHANGES HERE: */
+  position: relative; /* Start as relative so it sits next to Yes */
+  z-index: 5;
+  transition: background 0.3s ease; /* Only animate color change here */
 }
 
 .no-button:hover {
@@ -91,7 +154,7 @@
   margin-top: 20px;
 }
 
-/* Celebration styles */
+/* Celebration styles remain the same... */
 .valentine-container.celebration {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
@@ -201,8 +264,14 @@
   }
   
   .buttons-container {
-    gap: 20px;
-  }
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  min-height: 150px; /* Increased slightly to give more room to move */
+  position: relative; /* Essential boundary for the moving button */
+}
   
   .celebration-title {
     font-size: 3rem;
@@ -210,5 +279,9 @@
   
   .celebration-text {
     font-size: 1.6rem;
+  }
+  
+  .intro-text {
+    font-size: 1.5rem;
   }
 }
