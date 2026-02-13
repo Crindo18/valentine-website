@@ -1,0 +1,214 @@
+.valentine-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.valentine-content {
+  text-align: center;
+  max-width: 600px;
+  padding: 60px 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 1;
+}
+
+.valentine-title {
+  font-size: 3.5rem;
+  color: #d4524f;
+  margin-bottom: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.valentine-subtitle {
+  font-size: 1.5rem;
+  color: #8b5a5a;
+  margin-bottom: 50px;
+  font-weight: 400;
+}
+
+.buttons-container {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  min-height: 120px;
+  position: relative;
+}
+
+.yes-button {
+  padding: 20px 50px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+  position: relative;
+  z-index: 2;
+}
+
+.yes-button:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 15px 40px rgba(245, 87, 108, 0.5);
+}
+
+.no-button {
+  padding: 15px 35px;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #666;
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  position: absolute;
+  z-index: 1;
+}
+
+.no-button:hover {
+  background: #e8e8e8;
+}
+
+.hint-text {
+  font-size: 1rem;
+  color: #999;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+/* Celebration styles */
+.valentine-container.celebration {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.celebration-content {
+  text-align: center;
+  padding: 80px 40px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 30px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+}
+
+.celebration-title {
+  font-size: 4rem;
+  color: #667eea;
+  margin-bottom: 30px;
+  font-weight: 800;
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.celebration-text {
+  font-size: 2rem;
+  color: #764ba2;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.celebration-subtitle {
+  font-size: 1.3rem;
+  color: #8b5a5a;
+  margin-bottom: 40px;
+}
+
+.recordings-button {
+  padding: 18px 45px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.recordings-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+}
+
+/* Hearts animation */
+.hearts-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.heart {
+  position: absolute;
+  font-size: 2rem;
+  animation: float-up linear infinite;
+  opacity: 0;
+}
+
+@keyframes float-up {
+  0% {
+    bottom: -50px;
+    opacity: 1;
+  }
+  100% {
+    bottom: 110%;
+    opacity: 0;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .valentine-title {
+    font-size: 2.5rem;
+  }
+  
+  .valentine-subtitle {
+    font-size: 1.2rem;
+  }
+  
+  .yes-button {
+    padding: 18px 40px;
+    font-size: 1.5rem;
+  }
+  
+  .no-button {
+    padding: 12px 28px;
+    font-size: 1.1rem;
+  }
+  
+  .buttons-container {
+    gap: 20px;
+  }
+  
+  .celebration-title {
+    font-size: 3rem;
+  }
+  
+  .celebration-text {
+    font-size: 1.6rem;
+  }
+}
