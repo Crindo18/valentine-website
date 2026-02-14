@@ -8,10 +8,8 @@ const ValentinePage = ({ onNavigate }) => {
   
   const [noCount, setNoCount] = useState(0);
   const [noButtonPosition, setNoButtonPosition] = useState({ x: 0, y: 0 });
-  const [yesButtonSize, setYesButtonSize] = useState(1);
   const noButtonRef = useRef(null);
 
-  
   const introMessages = [
     "Hi love! 👋",
     "I know its late na.",
@@ -41,7 +39,13 @@ const ValentinePage = ({ onNavigate }) => {
     "WALA NA IM CRYING NA"
   ];
 
-  // Logic to get the current 'No' message
+  // --- YES BUTTON SIZING LOGIC ---
+  const MAX_SCALE = 15; 
+  const currentScale = Math.min(
+    1 + (noCount * ((MAX_SCALE - 1) / noPhrases.length)), 
+    MAX_SCALE
+  );
+
   const getNoButtonText = () => {
     return noPhrases[Math.min(noCount, noPhrases.length - 1)];
   };
@@ -72,25 +76,21 @@ const ValentinePage = ({ onNavigate }) => {
   const handleNoClick = () => {
     setNoCount(noCount + 1);
     
-    // Increase yes button size
-    setYesButtonSize(prev => Math.min(prev + 0.2, 3)); // Cap size at 3x
-
-    // Move the button to a random position
-    const container = document.querySelector('.valentine-container');
+    // --- NO BUTTON MOVEMENT LOGIC ---
     const button = noButtonRef.current;
-    
-    if (!container || !button) return;
-    
-    const containerRect = container.getBoundingClientRect();
-    const buttonRect = button.getBoundingClientRect();
-    
-    // Calculate random position within container bounds
-    // We use a larger padding to keep it away from edges
-    const maxX = containerRect.width - buttonRect.width - 40;
-    const maxY = containerRect.height - buttonRect.height - 40;
-    
-    const randomX = Math.random() * maxX - (containerRect.width / 2 - buttonRect.width / 2);
-    const randomY = Math.random() * maxY - (containerRect.height / 2 - buttonRect.height / 2);
+    if (!button) return;
+
+    // Get button dimensions (add buffer for text growth)
+    const buttonWidth = button.offsetWidth + 50; 
+    const buttonHeight = button.offsetHeight + 20;
+
+    // Calculate available space (window - button size - safe padding)
+    const maxX = window.innerWidth - buttonWidth - 20;
+    const maxY = window.innerHeight - buttonHeight - 20;
+
+    // Generate random coordinates ensuring it stays ON SCREEN
+    const randomX = Math.max(20, Math.random() * maxX);
+    const randomY = Math.max(20, Math.random() * maxY);
     
     setNoButtonPosition({ x: randomX, y: randomY });
   };
@@ -105,7 +105,7 @@ const ValentinePage = ({ onNavigate }) => {
           </p>
           <div className="intro-navigation">
             <button className="intro-button" onClick={handleNextIntro}>
-              {introIndex < introMessages.length - 1 ? "Next ➡️" : "Show me! 💖"}
+              {introIndex < introMessages.length - 1 ? "NEXT!" : "HEHEHEHE"}
             </button>
           </div>
           <div className="intro-progress">
@@ -126,7 +126,7 @@ const ValentinePage = ({ onNavigate }) => {
     return (
       <div className="valentine-container celebration">
         <div className="celebration-content">
-          <h1 className="celebration-title">🎉 Yay! 🎉</h1>
+          <h1 className="celebration-title">🎉 YEHEYYY HEHEHE🎉</h1>
           <p className="celebration-text">I LOVEEE YOUUU</p>
           <p className="celebration-subtitle">DEETS TOMORROW!!</p>
           <button 
@@ -160,7 +160,11 @@ const ValentinePage = ({ onNavigate }) => {
           <button 
             className="yes-button"
             onClick={handleYesClick}
-            style={{ transform: `scale(${yesButtonSize})` }}
+            style={{ 
+              transform: `scale(${currentScale})`,
+              transition: 'transform 0.2s ease',
+              zIndex: 10
+            }}
           >
             Yes!
           </button>
@@ -170,8 +174,11 @@ const ValentinePage = ({ onNavigate }) => {
             className="no-button"
             onClick={handleNoClick}
             style={{
-              // Apply position only if it has moved at least once (noCount > 0)
-              transform: noCount > 0 ? `translate(${noButtonPosition.x}px, ${noButtonPosition.y}px)` : 'none',
+              // FIXED positioning allows it to roam the entire screen
+              position: noCount > 0 ? 'fixed' : 'relative',
+              left: noCount > 0 ? noButtonPosition.x : 'auto',
+              top: noCount > 0 ? noButtonPosition.y : 'auto',
+              zIndex: 9999, 
               transition: 'all 0.2s ease'
             }}
           >
@@ -179,11 +186,7 @@ const ValentinePage = ({ onNavigate }) => {
           </button>
         </div>
         
-        {noCount > 0 && (
-          <p className="hint-text">
-            
-          </p>
-        )}
+        {/* Hint text removed as requested */}
       </div>
     </div>
   );

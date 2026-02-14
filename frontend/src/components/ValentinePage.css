@@ -1,4 +1,3 @@
-/* Keep existing container styles */
 .valentine-container {
   min-height: 100vh;
   display: flex;
@@ -6,14 +5,17 @@
   justify-content: center;
   background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
   position: relative;
-  overflow: hidden;
+  /* Removed overflow:hidden so the YES button doesn't get clipped 
+     when it becomes larger than the screen */
   padding: 20px;
 }
+
+/* ... keep your other existing styles (valentine-content, titles, etc) ... */
 
 .valentine-content {
   text-align: center;
   max-width: 600px;
-  width: 90%; /* Ensure responsiveness */
+  width: 90%;
   padding: 60px 40px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 30px;
@@ -22,7 +24,6 @@
   z-index: 1;
 }
 
-/* --- NEW INTRO STYLES --- */
 .intro-card {
   display: flex;
   flex-direction: column;
@@ -79,8 +80,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- EXISTING STYLES (Tweaked) --- */
-
 .valentine-title {
   font-size: 3.5rem;
   color: #d4524f;
@@ -103,8 +102,8 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 30px;
-  min-height: 120px; /* Space for button to grow */
-  position: relative; /* Essential for absolute positioning of No button */
+  min-height: 150px;
+  position: relative;
 }
 
 .yes-button {
@@ -119,7 +118,6 @@
   box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
   position: relative;
   z-index: 5;
-  /* We remove transitions here to let JS handle the scaling smoothly */
 }
 
 .yes-button:hover {
@@ -135,12 +133,10 @@
   border: 2px solid #ddd;
   border-radius: 50px;
   cursor: pointer;
-  white-space: nowrap; /* Prevents text wrapping */
-  
-  /* IMPORTANT CHANGES HERE: */
-  position: relative; /* Start as relative so it sits next to Yes */
+  white-space: nowrap; 
+  position: relative;
   z-index: 5;
-  transition: background 0.3s ease; /* Only animate color change here */
+  transition: background 0.3s ease;
 }
 
 .no-button:hover {
@@ -154,7 +150,7 @@
   margin-top: 20px;
 }
 
-/* Celebration styles remain the same... */
+/* Celebration styles */
 .valentine-container.celebration {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
@@ -243,7 +239,6 @@
   }
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .valentine-title {
     font-size: 2.5rem;
@@ -264,14 +259,8 @@
   }
   
   .buttons-container {
-  display: flex;
-  gap: 30px;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 30px;
-  min-height: 150px; /* Increased slightly to give more room to move */
-  position: relative; /* Essential boundary for the moving button */
-}
+    gap: 20px;
+  }
   
   .celebration-title {
     font-size: 3rem;
@@ -279,9 +268,5 @@
   
   .celebration-text {
     font-size: 1.6rem;
-  }
-  
-  .intro-text {
-    font-size: 1.5rem;
   }
 }
