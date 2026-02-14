@@ -1,10 +1,34 @@
 .recordings-container {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
   padding: 40px 20px;
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gallery-title {
+  font-family: 'Brush Script MT', cursive;
+  font-size: 3.5rem;
+  color: #d4524f;
+  margin-bottom: 40px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
+.photo-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1; /* Square photos */
+  background: #f0f0f0;
+  overflow: hidden;
+  margin-bottom: 15px;
 }
 
 .recordings-container.authenticated {
@@ -20,6 +44,23 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   padding: 50px 40px;
   position: relative;
+}
+.polaroid-card {
+  background: white;
+  padding: 15px 15px 40px 15px; /* Extra bottom padding for caption */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  transform: rotate(-2deg);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+.polaroid-card:nth-child(even) {
+  transform: rotate(2deg);
+}
+.polaroid-card:hover {
+  transform: scale(1.05) rotate(0deg);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+  z-index: 10;
 }
 
 .back-button {
@@ -113,7 +154,11 @@
   font-size: 1rem;
   margin-top: 10px;
 }
-
+.memory-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 /* Recordings Section */
 .recordings-header {
   text-align: center;
@@ -141,6 +186,15 @@
   flex-direction: column;
   gap: 25px;
   margin-bottom: 40px;
+}
+.placeholder-photo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
 }
 
 .recording-item {
@@ -180,6 +234,53 @@
   font-size: 0.9rem;
   color: #aaa;
 }
+.play-icon {
+  font-size: 3rem;
+  color: white;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+.card-caption {
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  color: #555;
+}
+
+.card-caption h3 {
+  font-size: 1.1rem;
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.card-caption p {
+  font-size: 0.9rem;
+  margin: 0;
+  color: #777;
+}
+.play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.polaroid-card:hover .play-overlay {
+  opacity: 1;
+}
+
 
 .recording-player audio {
   width: 100%;
@@ -221,7 +322,13 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .password-card,
+  .password-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  text-align: center;
+}
   .recordings-card {
     padding: 40px 25px;
   }
@@ -244,3 +351,4 @@
     font-size: 1.3rem;
   }
 }
+

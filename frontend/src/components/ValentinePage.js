@@ -146,26 +146,7 @@ const ValentinePage = ({ onNavigate }) => {
             }}>❤️</div>
           ))}
         </div>
-        <button 
-          style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            padding: '12px 24px',
-            background: 'rgba(102, 126, 234, 0.9)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '25px',
-            cursor: 'pointer',
-            fontSize: '1rem',
-            fontWeight: '600',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            zIndex: 9999
-          }}
-          onClick={() => onNavigate('admin')}
-        >
-          ⚙️ Admin
-        </button>
+        
       </div>
     );
   }

@@ -5,17 +5,20 @@ import API_URL from '../config';
 const AdminPage = ({ onNavigate }) => {
   const [recordings, setRecordings] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [settingPassword, setSettingPassword] = useState(false);
+  
+  // State for Uploading
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     order: 0,
-    file: null
+    audioFile: null,
+    photoFile: null
   });
-  const [passwordData, setPasswordData] = useState({
-    newPassword: '',
-    confirmPassword: ''
-  });
+
+  // State for Setting Password
+  const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '' });
+  const [settingPassword, setSettingPassword] = useState(false);
+  
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -34,32 +37,59 @@ const AdminPage = ({ onNavigate }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      file: e.target.files[0]
-    }));
+    const { name, files } = e.target;
+    setFormData(prev => ({ ...prev, [name]: files[0] }));
+  };
+
+  // --- PASSWORD HANDLERS ---
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSetPassword = async (e) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setMessage('Passwords do not match!');
+      return;
+    }
+
+    setSettingPassword(true);
+    try {
+      const response = await fetch(`${API_URL}/api/set-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: passwordData.newPassword })
+      });
+
+      if (response.ok) {
+        setMessage('Her password has been updated! 🔐');
+        setPasswordData({ newPassword: '', confirmPassword: '' });
+      } else {
+        setMessage('Failed to update password');
+      }
+    } catch (error) {
+      setMessage('Error setting password');
+    } finally {
+      setSettingPassword(false);
+    }
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    
-    if (!formData.file || !formData.title) {
-      setMessage('Please provide both a title and an audio file');
+    if (!formData.audioFile || !formData.title) {
+      setMessage('Please provide title and audio file');
       return;
     }
 
     setUploading(true);
-    setMessage('');
-
     const uploadData = new FormData();
-    uploadData.append('audio', formData.file);
+    uploadData.append('audio', formData.audioFile);
+    if (formData.photoFile) uploadData.append('photo', formData.photoFile);
     uploadData.append('title', formData.title);
     uploadData.append('description', formData.description);
     uploadData.append('order', formData.order);
@@ -71,236 +101,103 @@ const AdminPage = ({ onNavigate }) => {
       });
 
       if (response.ok) {
-        setMessage('Recording uploaded successfully! 🎉');
-        setFormData({
-          title: '',
-          description: '',
-          order: 0,
-          file: null
-        });
-        // Reset file input
-        document.getElementById('file-input').value = '';
+        setMessage('Uploaded successfully! 🎉');
+        setFormData({ title: '', description: '', order: 0, audioFile: null, photoFile: null });
+        document.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
         fetchRecordings();
       } else {
-        setMessage('Failed to upload recording');
+        setMessage('Failed to upload');
       }
     } catch (error) {
-      setMessage('Error uploading recording');
       console.error('Upload error:', error);
+      setMessage('Error uploading');
     } finally {
       setUploading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this recording?')) {
-      return;
-    }
-
+    if (!window.confirm('Delete this memory?')) return;
     try {
-      const response = await fetch(`${API_URL}/api/recordings/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setMessage('Recording deleted');
-        fetchRecordings();
-      }
+      await fetch(`${API_URL}/api/recordings/${id}`, { method: 'DELETE' });
+      fetchRecordings();
     } catch (error) {
       console.error('Delete error:', error);
-    }
-  };
-
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSetPassword = async (e) => {
-    e.preventDefault();
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setMessage('Passwords do not match!');
-      return;
-    }
-
-    if (passwordData.newPassword.length < 4) {
-      setMessage('Password must be at least 4 characters');
-      return;
-    }
-
-    setSettingPassword(true);
-    setMessage('');
-
-    try {
-      const response = await fetch(`${API_URL}/api/set-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: passwordData.newPassword })
-      });
-
-      if (response.ok) {
-        setMessage('Password set successfully! 🔐');
-        setPasswordData({ newPassword: '', confirmPassword: '' });
-      } else {
-        setMessage('Failed to set password');
-      }
-    } catch (error) {
-      setMessage('Error setting password');
-      console.error('Password error:', error);
-    } finally {
-      setSettingPassword(false);
     }
   };
 
   return (
     <div className="admin-container">
       <div className="admin-card">
-        <button 
-          className="back-button"
-          onClick={() => onNavigate('valentine')}
-        >
-          ← Back to Valentine
-        </button>
-
-        <h1 className="admin-title">Admin Panel</h1>
+        <button className="back-button" onClick={() => onNavigate('valentine')}>← Home</button>
+        <h1 className="admin-title">Admin Dashboard</h1>
         
-        {message && (
-          <div className={`message ${message.includes('successfully') || message.includes('🎉') || message.includes('🔐') ? 'success' : 'error'}`}>
-            {message}
-          </div>
-        )}
+        {message && <div className="message">{message}</div>}
 
-        {/* Password Section */}
+        {/* --- PASSWORD SECTION --- */}
         <section className="admin-section">
-          <h2 className="section-title">Set Access Password</h2>
-          <p className="section-description">
-            Set the password your girlfriend will use to access the recordings
-          </p>
-          
-          <form onSubmit={handleSetPassword} className="password-form">
-            <input
-              type="password"
-              name="newPassword"
-              value={passwordData.newPassword}
-              onChange={handlePasswordChange}
-              placeholder="New Password"
-              className="admin-input"
+          <h2 className="section-title">Set Her Access Password</h2>
+          <form onSubmit={handleSetPassword} className="password-form-admin" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <input 
+              type="password" 
+              name="newPassword" 
+              value={passwordData.newPassword} 
+              onChange={handlePasswordChange} 
+              placeholder="New Password for Her" 
+              className="admin-input" 
             />
-            <input
-              type="password"
-              name="confirmPassword"
-              value={passwordData.confirmPassword}
-              onChange={handlePasswordChange}
-              placeholder="Confirm Password"
-              className="admin-input"
+            <input 
+              type="password" 
+              name="confirmPassword" 
+              value={passwordData.confirmPassword} 
+              onChange={handlePasswordChange} 
+              placeholder="Confirm" 
+              className="admin-input" 
             />
-            <button 
-              type="submit" 
-              className="admin-button primary"
-              disabled={settingPassword}
-            >
-              {settingPassword ? 'Setting...' : 'Set Password'}
+            <button type="submit" className="admin-button" disabled={settingPassword}>
+              {settingPassword ? 'Saving...' : 'Set Password'}
             </button>
           </form>
         </section>
 
-        {/* Upload Section */}
         <section className="admin-section">
-          <h2 className="section-title">Upload Voice Recording</h2>
-          
+          <h2 className="section-title">Upload New Memory</h2>
           <form onSubmit={handleUpload} className="upload-form">
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              placeholder="Title (e.g., 'Good Morning Message')"
-              className="admin-input"
-              required
-            />
+            <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Title" className="admin-input" required />
+            <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="admin-textarea" rows="2" />
+            <input type="number" name="order" value={formData.order} onChange={handleInputChange} placeholder="Order" className="admin-input small" />
             
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Description (optional)"
-              className="admin-textarea"
-              rows="3"
-            />
-            
-            <input
-              type="number"
-              name="order"
-              value={formData.order}
-              onChange={handleInputChange}
-              placeholder="Order (0 = first)"
-              className="admin-input small"
-            />
-            
-            <div className="file-input-wrapper">
-              <input
-                id="file-input"
-                type="file"
-                accept="audio/*"
-                onChange={handleFileChange}
-                className="file-input"
-                required
-              />
-              <label htmlFor="file-input" className="file-label">
-                {formData.file ? formData.file.name : 'Choose audio file'}
-              </label>
+            <div className="file-input-group">
+              <label>Audio File:</label>
+              <input type="file" name="audioFile" accept="audio/*" onChange={handleFileChange} required />
             </div>
-            
-            <button 
-              type="submit" 
-              className="admin-button primary"
-              disabled={uploading}
-            >
-              {uploading ? 'Uploading...' : 'Upload Recording'}
+
+            <div className="file-input-group">
+              <label>Cover Photo (Optional):</label>
+              <input type="file" name="photoFile" accept="image/*" onChange={handleFileChange} />
+            </div>
+
+            <button type="submit" className="admin-button primary" disabled={uploading}>
+              {uploading ? 'Uploading...' : 'Upload Memory'}
             </button>
           </form>
         </section>
 
-        {/* Recordings List */}
         <section className="admin-section">
-          <h2 className="section-title">Existing Recordings</h2>
-          
-          {recordings.length === 0 ? (
-            <p className="no-recordings">No recordings yet</p>
-          ) : (
-            <div className="recordings-grid">
-              {recordings.map((recording) => (
-                <div key={recording._id} className="recording-card">
-                  <h3>{recording.title}</h3>
-                  {recording.description && <p>{recording.description}</p>}
-                  <div className="recording-meta">
-                    <span>Order: {recording.order}</span>
-                    <span>{new Date(recording.uploadDate).toLocaleDateString()}</span>
-                  </div>
-                  <button 
-                    onClick={() => handleDelete(recording._id)}
-                    className="delete-button"
-                  >
-                    Delete
-                  </button>
+          <h2 className="section-title">Existing Memories</h2>
+          <div className="recordings-list-admin">
+            {recordings.map((rec) => (
+              <div key={rec._id} className="admin-recording-item">
+                {rec.photoUrl && <img src={rec.photoUrl} alt="cover" className="admin-thumb" />}
+                <div className="admin-rec-info">
+                  <strong>{rec.title}</strong>
+                  <span>{new Date(rec.uploadDate).toLocaleDateString()}</span>
                 </div>
-              ))}
-            </div>
-          )}
+                <button onClick={() => handleDelete(rec._id)} className="delete-btn">×</button>
+              </div>
+            ))}
+          </div>
         </section>
-
-        <div className="admin-footer">
-          <button 
-            onClick={() => onNavigate('recordings')}
-            className="admin-button"
-          >
-            View Recordings Page
-          </button>
-        </div>
       </div>
     </div>
   );

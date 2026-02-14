@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './RecordingsPage.css';
+import API_URL from '../config';
 
 const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => {
   const [password, setPassword] = useState('');
   const [recordings, setRecordings] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [playingId, setPlayingId] = useState(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -16,7 +17,7 @@ const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => 
 
   const fetchRecordings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/recordings');
+      const response = await fetch(`${API_URL}/api/recordings`);
       const data = await response.json();
       setRecordings(data);
     } catch (error) {
@@ -30,7 +31,7 @@ const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => 
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/verify-password', {
+      const response = await fetch(`${API_URL}/api/verify-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
@@ -39,24 +40,39 @@ const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => 
       const data = await response.json();
 
       if (data.valid) {
-        setIsAuthenticated(true);
-        setPassword('');
+        if (data.role === 'admin') {
+          // Redirect to Admin Panel if admin password is used
+          onNavigate('admin');
+        } else {
+          // Unlock recordings if user password is used
+          setIsAuthenticated(true);
+          setPassword('');
+        }
       } else {
         setError('Incorrect password. Try again! 💕');
-        setPassword('');
       }
     } catch (error) {
-      setError('Something went wrong. Please try again.');
+      setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePlayPause = (recordingId) => {
-    if (currentlyPlaying === recordingId) {
-      setCurrentlyPlaying(null);
+  const handlePlay = (audioId) => {
+    const audio = document.getElementById(`audio-${audioId}`);
+    
+    // Pause currently playing if different
+    if (playingId && playingId !== audioId) {
+      const current = document.getElementById(`audio-${playingId}`);
+      if (current) current.pause();
+    }
+
+    if (audio.paused) {
+      audio.play();
+      setPlayingId(audioId);
     } else {
-      setCurrentlyPlaying(recordingId);
+      audio.pause();
+      setPlayingId(null);
     }
   };
 
@@ -64,35 +80,21 @@ const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => 
     return (
       <div className="recordings-container">
         <div className="password-card">
-          <button 
-            className="back-button"
-            onClick={() => onNavigate('valentine')}
-          >
-            ← Back
-          </button>
-          
+          <button className="back-button" onClick={() => onNavigate('valentine')}>← Back</button>
           <div className="password-content">
-            <h1 className="password-title">Something Special Awaits 💝</h1>
-            <p className="password-subtitle">
-              I've left you some messages from my heart.<br/>
-              Enter the password to unlock them.
-            </p>
-            
+            <h1 className="password-title">Locked Area 🔒</h1>
+            <p className="password-subtitle">Enter the magic word to enter.</p>
             <form onSubmit={handlePasswordSubmit} className="password-form">
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
+                placeholder="Password"
                 className="password-input"
-                disabled={loading}
+                autoFocus
               />
-              <button 
-                type="submit" 
-                className="password-submit"
-                disabled={loading}
-              >
-                {loading ? 'Checking...' : 'Unlock 🔓'}
+              <button type="submit" className="password-submit" disabled={loading}>
+                {loading ? 'Checking...' : 'Enter'}
               </button>
               {error && <p className="error-message">{error}</p>}
             </form>
@@ -104,66 +106,36 @@ const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => 
 
   return (
     <div className="recordings-container authenticated">
-      <div className="recordings-card">
-        <button 
-          className="back-button"
-          onClick={() => onNavigate('valentine')}
-        >
-          ← Back
-        </button>
-        
-        <div className="recordings-header">
-          <h1 className="recordings-title">Messages From My Heart 💕</h1>
-          <p className="recordings-intro">
-            I recorded these just for you. Take your time and listen whenever you want to hear my voice.
-          </p>
-        </div>
-
-        <div className="recordings-list">
-          {recordings.length === 0 ? (
-            <p className="no-recordings">
-              No recordings yet. Check back soon! 💝
-            </p>
-          ) : (
-            recordings.map((recording) => (
-              <div key={recording._id} className="recording-item">
-                <div className="recording-info">
-                  <h3 className="recording-title">{recording.title}</h3>
-                  {recording.description && (
-                    <p className="recording-description">{recording.description}</p>
-                  )}
-                  <p className="recording-date">
-                    {new Date(recording.uploadDate).toLocaleDateString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </p>
-                </div>
-                
-                <div className="recording-player">
-                  <audio
-                    controls
-                    src={recording.url}
-                    onPlay={() => handlePlayPause(recording._id)}
-                    onPause={() => setCurrentlyPlaying(null)}
-                  >
-                    Your browser does not support the audio element.
-                  </audio>
-                </div>
+      <button className="back-button" onClick={() => onNavigate('valentine')}>← Back</button>
+      
+      <h1 className="gallery-title">Our Memories 📸</h1>
+      
+      <div className="photo-grid">
+        {recordings.map((rec) => (
+          <div key={rec._id} className="polaroid-card" onMouseEnter={() => {}} onMouseLeave={() => {}}>
+            <div className="photo-frame">
+              {/* If no photo is uploaded, use a placeholder gradient or default image */}
+              {rec.photoUrl ? (
+                <img src={rec.photoUrl} alt={rec.title} className="memory-photo" />
+              ) : (
+                <div className="placeholder-photo">🎵</div>
+              )}
+              
+              <div className="play-overlay" onClick={() => handlePlay(rec._id)}>
+                <span className="play-icon">
+                  {playingId === rec._id ? '⏸' : '▶'}
+                </span>
               </div>
-            ))
-          )}
-        </div>
-
-        <div className="admin-link">
-          <button 
-            onClick={() => onNavigate('admin')}
-            className="admin-button"
-          >
-            Admin Panel
-          </button>
-        </div>
+            </div>
+            
+            <div className="card-caption">
+              <h3>{rec.title}</h3>
+              <p>{rec.description}</p>
+            </div>
+            
+            <audio id={`audio-${rec._id}`} src={rec.audioUrl} onEnded={() => setPlayingId(null)} />
+          </div>
+        ))}
       </div>
     </div>
   );
