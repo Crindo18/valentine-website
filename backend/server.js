@@ -3,157 +3,110 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
-const bcrypt = require('bcrypt');
-const path = require('path');
+const { v2: cloudinary } = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Middleware
+// 1. Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/valentine', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.log('MongoDB connection error:', err));
+// 2. Database Connection
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// Recording Schema
-const recordingSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: String,
-  filename: { type: String, required: true },
-  originalName: String,
-  uploadDate: { type: Date, default: Date.now },
-  order: { type: Number, default: 0 }
+// 3. Cloudinary Config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const Recording = mongoose.model('Recording', recordingSchema);
-
-// Password Schema (for simple auth)
-const passwordSchema = new mongoose.Schema({
-  hashedPassword: { type: String, required: true }
-});
-
-const Password = mongoose.model('Password', passwordSchema);
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+// 4. Storage Engine (Multer + Cloudinary)
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    // Determine resource type based on file mimetype
+    let resource_type = 'auto'; // Default
+    if (file.mimetype.startsWith('audio')) resource_type = 'video'; // Cloudinary treats audio as video
+    if (file.mimetype.startsWith('video')) resource_type = 'video';
+    
+    return {
+      folder: 'valentine-memories',
+      resource_type: resource_type,
+      public_id: file.originalname.split('.')[0] + '-' + Date.now(),
+    };
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+});
+
+const upload = multer({ storage: storage });
+
+// 5. Database Model
+const RecordingSchema = new mongoose.Schema({
+  title: String,
+  url: String, // The Cloudinary URL
+  type: String, // 'audio', 'video', 'image'
+  createdAt: { type: Date, default: Date.now },
+});
+const Recording = mongoose.model('Recording', RecordingSchema);
+
+// --- ROUTES ---
+
+// Login Route (Simple password check)
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (password === process.env.ADMIN_PASSWORD) {
+    // Create a token that lasts 24 hours
+    const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    res.json({ success: true, token });
+  } else {
+    res.status(401).json({ success: false, message: 'Incorrect password' });
   }
 });
 
-const upload = multer({ 
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /mp3|wav|m4a|ogg|webm/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only audio files are allowed!'));
-    }
-  }
-});
-
-// Routes
-
-// Set password (call this once to set up)
-app.post('/api/set-password', async (req, res) => {
+// Upload Route (Protected)
+app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
-    const { password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Delete existing password and create new one
-    await Password.deleteMany({});
-    const newPassword = new Password({ hashedPassword });
-    await newPassword.save();
-    
-    res.json({ message: 'Password set successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-// Verify password
-app.post('/api/verify-password', async (req, res) => {
-  try {
-    const { password } = req.body;
-    const storedPassword = await Password.findOne();
-    
-    if (!storedPassword) {
-      return res.status(404).json({ error: 'Password not set' });
-    }
-    
-    const isValid = await bcrypt.compare(password, storedPassword.hashedPassword);
-    res.json({ valid: isValid });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+    // Determine type for frontend to render correctly
+    let type = 'image';
+    if (req.file.mimetype.startsWith('audio')) type = 'audio';
+    if (req.file.mimetype.startsWith('video')) type = 'video';
 
-// Upload recording
-app.post('/api/recordings', upload.single('audio'), async (req, res) => {
-  try {
-    const { title, description, order } = req.body;
-    
-    const recording = new Recording({
-      title,
-      description,
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      order: order || 0
+    const newRecording = new Recording({
+      title: req.body.title || 'Untitled Memory',
+      url: req.file.path, // Cloudinary URL
+      type: type
     });
-    
-    await recording.save();
-    res.json(recording);
+
+    await newRecording.save();
+    res.json({ success: true, recording: newRecording });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Upload failed' });
   }
 });
 
-// Get all recordings
+// Get All Recordings
 app.get('/api/recordings', async (req, res) => {
   try {
-    const recordings = await Recording.find().sort({ order: 1, uploadDate: 1 });
+    const recordings = await Recording.find().sort({ createdAt: -1 }); // Newest first
     res.json(recordings);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: 'Error fetching recordings' });
   }
 });
 
-// Delete recording
-app.delete('/api/recordings/:id', async (req, res) => {
-  try {
-    await Recording.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Recording deleted' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// Valentine Response (The Yes button)
+app.post('/api/valentine-response', (req, res) => {
+    console.log("YEHEYYY");
+    // You could add code here to send yourself an email if you want
+    res.json({ success: true });
 });
 
-// Valentine response tracking (optional)
-app.post('/api/valentine-response', async (req, res) => {
-  try {
-    const { response } = req.body;
-    console.log('Valentine response:', response);
-    res.json({ message: 'Response recorded!' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
