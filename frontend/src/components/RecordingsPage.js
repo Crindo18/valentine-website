@@ -72,9 +72,10 @@ const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => 
           </button>
           
           <div className="password-content">
-            <h1 className="password-title">the password is secret hehe</h1>
+            <h1 className="password-title">Something Special Awaits 💝</h1>
             <p className="password-subtitle">
-              You need to give me a kiss first before getting the password hehe
+              I've left you some messages from my heart.<br/>
+              Enter the password to unlock them.
             </p>
             
             <form onSubmit={handlePasswordSubmit} className="password-form">
@@ -143,7 +144,7 @@ const RecordingsPage = ({ onNavigate, isAuthenticated, setIsAuthenticated }) => 
                 <div className="recording-player">
                   <audio
                     controls
-                    src={`http://localhost:5000/uploads/${recording.filename}`}
+                    src={recording.url}
                     onPlay={() => handlePlayPause(recording._id)}
                     onPause={() => setCurrentlyPlaying(null)}
                   >

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPage.css';
+import API_URL from '../config';
 
 const AdminPage = ({ onNavigate }) => {
   const [recordings, setRecordings] = useState([]);
@@ -23,7 +24,7 @@ const AdminPage = ({ onNavigate }) => {
 
   const fetchRecordings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/recordings');
+      const response = await fetch(`${API_URL}/api/recordings`);
       const data = await response.json();
       setRecordings(data);
     } catch (error) {
@@ -64,7 +65,7 @@ const AdminPage = ({ onNavigate }) => {
     uploadData.append('order', formData.order);
 
     try {
-      const response = await fetch('http://localhost:5000/api/recordings', {
+      const response = await fetch(`${API_URL}/api/recordings`, {
         method: 'POST',
         body: uploadData
       });
@@ -97,7 +98,7 @@ const AdminPage = ({ onNavigate }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/recordings/${id}`, {
+      const response = await fetch(`${API_URL}/api/recordings/${id}`, {
         method: 'DELETE'
       });
 
@@ -135,7 +136,7 @@ const AdminPage = ({ onNavigate }) => {
     setMessage('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/set-password', {
+      const response = await fetch(`${API_URL}/api/set-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: passwordData.newPassword })

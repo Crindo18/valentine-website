@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import './ValentinePage.css';
+import API_URL from '../config';
 
 const ValentinePage = ({ onNavigate }) => {
   // STAGE: 'intro' | 'question' | 'success'
@@ -63,7 +64,7 @@ const ValentinePage = ({ onNavigate }) => {
     
     // Optional: Send response to backend
     try {
-      await fetch('http://localhost:5000/api/valentine-response', {
+      await fetch(`${API_URL}/api/valentine-response`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ response: 'yes' })
@@ -145,6 +146,26 @@ const ValentinePage = ({ onNavigate }) => {
             }}>❤️</div>
           ))}
         </div>
+        <button 
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            padding: '12px 24px',
+            background: 'rgba(102, 126, 234, 0.9)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '25px',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            fontWeight: '600',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            zIndex: 9999
+          }}
+          onClick={() => onNavigate('admin')}
+        >
+          ⚙️ Admin
+        </button>
       </div>
     );
   }
