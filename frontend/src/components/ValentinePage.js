@@ -176,7 +176,7 @@ const ValentinePage = ({ onNavigate }) => {
             className="no-button"
             onClick={handleNoClick}
             style={{
-              // FIXED positioning allows it to roam the entire screen
+    
               position: noCount > 0 ? 'fixed' : 'relative',
               left: noCount > 0 ? noButtonPosition.x : 'auto',
               top: noCount > 0 ? noButtonPosition.y : 'auto',
@@ -187,8 +187,7 @@ const ValentinePage = ({ onNavigate }) => {
             {getNoButtonText()}
           </button>
         </div>
-        
-        {/* Hint text removed as requested */}
+      
       </div>
     </div>
   );
